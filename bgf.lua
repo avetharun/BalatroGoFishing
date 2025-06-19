@@ -8,6 +8,9 @@
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
+
+--TODO: make it so Carcinization from SDM0's can't convert harpy
+
 FishingMod = FishingMod or {}
 --Creates an atlas for cards to use
 FishingMod.MainAtlas = SMODS.Atlas {
@@ -599,7 +602,7 @@ FishingMod.fishing_minigame = {
 }
 G = G or {}
 function FishingMod.classifyWeight(weight, medianWeight)
-    local ratio = weight / medianWeight
+    local ratio = (weight or 1) / (medianWeight or 1)
 
     if ratio < 0.3 then
         return "bgf_w_tiny"
@@ -638,7 +641,7 @@ FishingMod.create_UIBox_result_screen = function (reason)
 		)
 		local fishingRod =  FishingMod.FishingRod
 		local fishingRodCenter = G.P_CENTERS[fishingRod.key]
-		local fishingBaitCenter = G.P_CENTERS[FishingMod.SelectedBait.key]
+		local fishingBaitCenter = G.P_CENTERS[FishingMod.SelectedBait.key] or FishingMod.DefaultBait
 		local rarityMax = fishingBaitCenter.rarity or 2
 		local card = SMODS.create_card({
 			set = "Fishies",
@@ -1083,21 +1086,33 @@ end
 
 
 
-FishingMod.Base = SMODS.Center:extend{}
-
-FishingMod.Fish = SMODS.Joker:extend{
-	-- unlocked = true,1\
-	in_pool = function (self, args)
-		return true, { allow_duplicates = true }
+FishingMod.Base = SMODS.Joker:extend{
+	omit = true,
+	inject = function(self)
+		SMODS.Joker.inject(self)
+		SMODS.insert_pool(G.P_CENTER_POOLS[self.set], self)
+		SMODS.remove_pool(G.P_CENTER_POOLS["Joker"], self)
+		for key, value in pairs(G.P_CENTER_POOLS["Joker"]) do
+			if value.original_key == "bgf_cod" then
+				print("????")
+			end
+		end
 	end,
+	in_pool = function (self, args)
+		
+		return args.source ~= "sho", { allow_duplicates = true }
+	end,
+}
+
+FishingMod.Fish = FishingMod.Base:extend{
 	set="Fishies",
 	allow_duplicates = true,
-    pools = { ["Fishies"] = true },
+    pools = { ["Fishies"] = true},
 	bgf_is_fish = true,
 	inject = function(self)
 		
 		-- call the parent function to ensure all pools are set
-		SMODS.Joker.inject(self)
+		FishingMod.Base.inject(self)
 		FishingMod.BGF_Fishes[#FishingMod.BGF_Fishes+1] = self
 		FishieType:inject_card(self)
 	end,
@@ -1107,7 +1122,7 @@ FishingMod.Fish = SMODS.Joker:extend{
 		return {
             vars = {
                 card.ability.extra.weight or "???",
-                (card.ability.extra.weight and localize(FishingMod.classifyWeight(card.ability.extra.weight, card.ability.extra.median_weight))) or localize("bgf_uncaught"),
+                ((card.ability.extra.weight and card.ability.extra.weight) and localize(FishingMod.classifyWeight(card.ability.extra.weight, card.ability.extra.median_weight))) or localize("bgf_uncaught"),
             }
         }
     end,
@@ -1168,10 +1183,10 @@ local function calculate_percentage_change(current, base)
 end
 
 
-FishingMod.FishingRodClass = SMODS.Joker:extend{
+FishingMod.FishingRodClass = FishingMod.Base:extend{
 	can_sell = true,
 	set="FishingRod",
-    pools = { ["FishingRods"] = true, Joker=false},
+    pools = { ["FishingRods"] = true},
 	weight_multiplier = 1,
 	bgf_is_fishing_rod = true,
 	inject = function(self)
@@ -1182,7 +1197,7 @@ FishingMod.FishingRodClass = SMODS.Joker:extend{
 		self.config.extra.weight = self.config.extra.weight or 8
 		self.config.extra.weight_multiplier = self.config.extra.weight_multiplier or 1
 		-- call the parent function to ensure all pools are set
-		SMODS.Joker.inject(self)
+		FishingMod.Base.inject(self)
 		-- SMODS.insert_pool(G.P_CENTER_POOLS.BGF_FishingRods[self.rarity], self, false)
 		FishingMod.BGF_FishingRods[#FishingMod.BGF_FishingRods+1] = self
 	end,
@@ -1253,15 +1268,15 @@ FishingMod.FishingRodClass = SMODS.Joker:extend{
 	end,
 }
 
-FishingMod.FishingBait = SMODS.Joker:extend{
+FishingMod.FishingBait = FishingMod.Base:extend{
 	set="Baits",
 	edition = nil,
 	stackable = true,
-	pools = { ["FishingBait"] = true, Joker=false},
+	pools = { ["FishingBait"] = true},
 	can_sell = true,
 	inject = function(self)
 		-- call the parent function to ensure all pools are set
-		SMODS.Joker.inject(self)
+		FishingMod.Base.inject(self)
 		-- SMODS.insert_pool(G.P_CENTER_POOLS.BGF_Baits[self.rarity], self, false)
 		FishingMod.BGF_FishingBaits[#FishingMod.BGF_FishingBaits+1] = self
 	end,
@@ -1470,7 +1485,7 @@ FishingMod.FishingBait {
 	}},
     display_size = { w = 34, h = 34 },
 }
-FishingMod.FishingBait {
+FishingMod.DefaultBait = FishingMod.FishingBait {
 	rarity = FishingMod.FishRarity.Common,
 	key = "bgf_bait_worm",
 	atlas="bait",
