@@ -294,6 +294,8 @@ SMODS.Booster {
 				skip_materialize = true,
 				soulable = true,
 			})
+			c.ability.extra.weight = math.min(c.ability.extra.weight * 2, math.max(c.ability.extra.weight * 0.5, (c.ability.extra.weight * ((math.random() * 1.25 - 0.1)))))
+			c.ability.extra.weight_multiplier = math.min(c.ability.extra.weight_multiplier * 2, c.ability.extra.weight_multiplier > 1 and math.max(c.ability.extra.weight * 0.5, (c.ability.extra.weight * ((math.random() * 1.25 - 0.1)))) or c.ability.extra.weight_multiplier)
 		else
 			c = SMODS.create_card({
 				set = "Baits",
@@ -485,7 +487,7 @@ FishingMod.fishing_minigame = {
 		fishing_area.bobber.has_fish = false
 		fishing_area.bobber.can_cast = true
 		fishing_area.bobber.visible = false
-		FishingMod.fishing_minigame.results_screen.fish = nil
+		FishingMod.fishing_minigame.results_screen.has_fish = false
 	end,
 	chances = -1,
 	results_screen = {
@@ -632,7 +634,7 @@ local function rectsIntersect(rect1, rect2)
            rect1.y + rect1.h > rect2.y
 end
 FishingMod.create_UIBox_result_screen = function (reason)
-	if FishingMod.fishing_minigame.results_screen.fish then
+	if FishingMod.fishing_minigame.results_screen.has_fish then
 		local area = CardArea(
 			G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
 			G.CARD_W,
@@ -651,7 +653,7 @@ FishingMod.create_UIBox_result_screen = function (reason)
 			rarity = rarityMax
 		})
 		local p_card = card.config.center
-		local medianWeight = card.ability.extra.median_weight
+		local medianWeight = card.ability.extra.median_weight or 1
 		area:emplace(card)
 		if card.edition and card.edition.type == "foil" then
 			card:set_edition("holo")
@@ -659,9 +661,9 @@ FishingMod.create_UIBox_result_screen = function (reason)
 		if card.edition and card.edition.type == "negative" then
 			card:set_edition("polychrome")
 		end
-		while medianWeight >= fishingRod.ability.extra.weight do
-			medianWeight = medianWeight * 0.3
-		end
+		-- while medianWeight >= fishingRod.ability.extra.weight or 1 do
+		-- 	medianWeight = medianWeight * 0.3
+		-- end
 		card.ability.extra.weight = (medianWeight * math.random(0,10)/10) * (fishingRod.ability.extra.weight_multiplier and ((math.random(10,20) * fishingRod.ability.extra.weight_multiplier ) /10) or 1)
 
 		FishingMod.fishing_minigame.results_screen.fish = card
@@ -673,7 +675,7 @@ FishingMod.create_UIBox_result_screen = function (reason)
 					{n=G.UIT.R, config={align = "tm"}, nodes={{n=G.UIT.O, config = {align = "tm", object=DynaText({align = "tm", string="~"..p_card:get_name().."~",scale=1,float=true,shadow=true, colours = {G.C.SECONDARY_SET.Spectral}})}}}},
 					{n=G.UIT.R, config={align = "tm"}, nodes={{n=G.UIT.O, config = {align = "tm", object=DynaText({align = "tm", string=p_card:get_pun_text(),scale=.65,float=true,shadow=true, colours = {G.C.EDITION}})}}}},
 					
-					{n=G.UIT.R, config={align = "cm"}, nodes={{n=G.UIT.O, config = {align = "tm", object=DynaText({string=localize("bgf_fish_weight")..(card.ability.extra.weight or "???") .. "kg",scale=.5,float=true,shadow=true, colours = {G.C.WHITE}})}}}},
+					{n=G.UIT.R, config={align = "cm"}, nodes={{n=G.UIT.O, config = {align = "tm", object=DynaText({string=localize("bgf_fish_weight")..(tonumber(string.format("%.2f", card.ability.extra.weight)) or "???") .. "kg",scale=.5,float=true,shadow=true, colours = {G.C.WHITE}})}}}},
 					{n=G.UIT.R, config={align = "tm"}, nodes={{n=G.UIT.O, config = {align = "tm", object=DynaText({string=localize("bgf_fish_size")..
 					localize(FishingMod.classifyWeight(card.ability.extra.weight or 0, medianWeight)),scale=.5,float=true,shadow=true, colours = {G.C.WHITE}})}}}},
 					{n=G.UIT.R, config={align = "cm"}, nodes={{n=G.UIT.O, config = {align = "cm", object=area, juice = true}}}}
@@ -719,6 +721,16 @@ FishingMod.create_UIBox_result_screen = function (reason)
 		end
 	end
 	FishingMod.fishing_minigame.practice = false
+	return (create_UIBox_generic_options({
+		back_func = "bgf_result_screen_exit",
+		contents = {
+			{n=G.UIT.C, config={align = "tm", colour = HEX("1e2b2d"),minw = 12, minh = 8, maxw = 12, maxh = 8, r = 0.1}, nodes={
+				{n=G.UIT.R, config={align = "tm"}, nodes={{n=G.UIT.O, config = {align = "tm", object=DynaText({align = "tm", string=localize("bgf_fish_could_not_start"),scale=1.25,float=true,shadow=true}), juice = true, scale = 0.5,padding=0.5}}}},
+				{n=G.UIT.R, config={align = "tm"}, nodes={{n=G.UIT.B, config={w = 1, h = 1}}}},
+				{n=G.UIT.R, config={align = "tm"}, nodes={{n=G.UIT.O, config = {align = "tm", object=DynaText({align = "tm", string="Unknown error occured! mention @feintha!",scale=1,float=true,shadow=true, colours = {G.C.RED}})}}}},
+			}},
+		}
+	}))
 end
 FishingMod.fishing_minigame.start = function (self)
 	if FishingMod.FishingRod and FishingMod.SelectedBait then
@@ -1086,7 +1098,7 @@ end
 
 
 
-FishingMod.Base = SMODS.Joker:extend{
+FishingMod.Base = SMODS.Center:extend{
 	omit = true,
 	inject = function(self)
 		SMODS.Joker.inject(self)
@@ -1097,6 +1109,23 @@ FishingMod.Base = SMODS.Joker:extend{
 				print("????")
 			end
 		end
+		self.config = self.config or {}
+	end,
+	
+	generate_ui = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table)
+		-- `self`, `info_queue`, `card`: See loc_vars
+		-- `desc_nodes`: A table to place UIElements into to be displayed in the current description box
+		-- `specific_vars`: Variables passed from outside the current `generate_ui` call. Can be ignored for modded objects
+		-- `full_UI_table`: A table representing the main description box. 
+		-- Mainly used for checking if this is the main description or a tooltip, or manipulating the main description from tooltips.
+		-- This function need not return anything, its effects should be applied by modifying desc_nodes
+		-- desc_nodes[#desc_nodes+1] = {n=G.UIT.T, config={text="a",colour=G.C.UI.TEXT_DARK}}
+		full_UI_table.name = localize {
+			type = 'name',
+			key = card.config.center_key,
+			set = self.set or 'Fishies',
+		}
+		localize{type = 'descriptions', key = self.key, set = self.set, nodes = desc_nodes, vars = self:loc_vars(info_queue, card).vars, AUT = full_UI_table}
 	end,
 	in_pool = function (self, args)
 		
@@ -1105,6 +1134,8 @@ FishingMod.Base = SMODS.Joker:extend{
 }
 
 FishingMod.Fish = FishingMod.Base:extend{
+	class_prefix = "f",
+	generate_ui = FishingMod.Base.generate_ui,
 	set="Fishies",
 	allow_duplicates = true,
     pools = { ["Fishies"] = true},
@@ -1134,7 +1165,7 @@ FishingMod.Fish = FishingMod.Base:extend{
 		local rarity_modifier = card.ability.extra.rarity_modifier or 1
 		local mult = card.edition and (card.edition.mult and card.edition.mult) or 0
 		local xmult = (card.edition and (card.edition.x_mult and card.edition.x_mult * 4)) or 1
-		local ratio = (card.ability.weight / card.ability.extra.median_weight) * 4
+		local ratio = (card.ability.extra.weight / card.ability.extra.median_weight) * 4
 		return tonumber(string.format("%.0f", ((card.config.center.rarity * rarity_modifier + ratio) + mult) * xmult))
 	end,
 	---comment
@@ -1154,22 +1185,21 @@ FishingMod.Fish = FishingMod.Base:extend{
 		local card = self:create_fake_card()
 		card.key = self.key
 		card.ability = card.ability or {}
-		card.ability.weight = tonumber(string.format("%.2f", weight))
+		card.ability.extra.weight = tonumber(string.format("%.2f", weight))
 		card.fake_card = nil
 		
 		card.loc_vars = function(self, info_queue, card)
 			return {
 				vars = {
-					card.ability.weight or "???",
+					card.ability.extra.weight or "???",
 					localize("bgf_uncaught"),
 				}
 			}
 		end
 		card.vars = {
-			card.ability.weight or "???",
+			card.ability.extra.weight or "???",
 			localize("bgf_uncaught"),
 		}
-		print(card.ability.weight)
 		return card
 	end
 }
@@ -1185,6 +1215,7 @@ end
 
 FishingMod.FishingRodClass = FishingMod.Base:extend{
 	can_sell = true,
+	class_prefix = "r",
 	set="FishingRod",
     pools = { ["FishingRods"] = true},
 	weight_multiplier = 1,
@@ -1206,7 +1237,7 @@ FishingMod.FishingRodClass = FishingMod.Base:extend{
 	loc_vars = function(self, info_queue, card)
 		return {
             vars = {
-                card.ability.weight or "???",
+                card.ability.extra.weight or "???",
             }
         }
     end,
@@ -1240,36 +1271,37 @@ FishingMod.FishingRodClass = FishingMod.Base:extend{
 			local txtGravPer, gravPer = calculate_percentage_change(card.ability.extra.gravity, FishingMod.FishingRod.ability.extra.gravity)
 			local txtSpdPer, spdPer = calculate_percentage_change(card.ability.extra.speed, FishingMod.FishingRod.ability.extra.speed)
 			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_weight_max"):format(
-				tostring(card.ability.extra.weight) ..
+				tostring(FaeLib.Builtin.StripDecimalAfter(card.ability.extra.weight)) ..
 				txtWeightPer
 			), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9)
 
 			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_fish_weight_addtl"):format(
-				tostring((card.ability.extra.weight_multiplier or 1) * 100) .. "%"..
+				tostring(FaeLib.Builtin.StripDecimalAfter((card.ability.extra.weight_multiplier or 1) * 100)) .. "%"..
 				txtWeightMultPer
 			), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9)
 
 			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_heaviness"):format(
-				tostring((card.ability.extra.gravity or 1) * 100) ..
+				tostring(FaeLib.Builtin.StripDecimalAfter(card.ability.extra.gravity or 1) * 100, 2) ..
 				txtGravPer
 			), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9)
 
 			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_speed"):format(
-				tostring((card.ability.extra.speed or 1) * 100) ..
+				tostring(FaeLib.Builtin.StripDecimalAfter(card.ability.extra.speed or 1) * 100) ..
 				txtSpdPer
 			), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9)
 
 		else
-			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_weight_max"):format(tostring(card.ability.extra.weight) or "???"), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9 )
-			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_fish_weight_addtl"):format(tostring((card.ability.extra.weight_multiplier or 1) * 100) ).."%", G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9 )
-			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_heaviness"):format(tostring((card.ability.extra.gravity or 1) * 100) ), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9 )
-			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_speed"):format(tostring((card.ability.extra.speed or 1) * 100) ), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9 )
+			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_weight_max"):format(tostring(FaeLib.Builtin.StripDecimalAfter(card.ability.extra.weight)) or "???"), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9 )
+			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_fish_weight_addtl"):format(tostring(FaeLib.Builtin.StripDecimalAfter((card.ability.extra.weight_multiplier or 1) * 100)) ).."%", G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9 )
+			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_heaviness"):format(tostring(FaeLib.Builtin.StripDecimalAfter((card.ability.extra.gravity or 1) * 100)) ), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9 )
+			badges[#badges+1] = create_badge(localize("bgf_rod_tooltip_speed"):format(tostring(FaeLib.Builtin.StripDecimalAfter((card.ability.extra.speed or 1) * 100)) ), G.C.CLEAR, G.C.UI.TEXT_LIGHT, 0.9 )
 		end
 	end,
 }
 
 FishingMod.FishingBait = FishingMod.Base:extend{
 	set="Baits",
+	class_prefix = "b",
 	edition = nil,
 	stackable = true,
 	pools = { ["FishingBait"] = true},
@@ -1285,7 +1317,7 @@ FishingMod.FishingBait = FishingMod.Base:extend{
 	loc_vars = function(self, info_queue, card)
 		return {
             vars = {
-                card.ability.weight or "???",
+                card.ability.extra.weight or "???",
             }
         }
     end,
@@ -1325,7 +1357,7 @@ FishingMod.Fish {
 	key = "bgf_shark",
 	atlas = "fishies",
 	pos = {x = 0, y = 0},
-	config = {extra={weight = 8}},
+	config = {extra={median_weight = 8}},
 }
 FishingMod.Fish {
     pools = { ["Fishie"] = true},
@@ -1392,12 +1424,12 @@ FishingMod.Fish {
 	config = {extra={median_weight = 1.2}},
 }
 FishingMod.Fish {
-	in_pool = function() return false end,
+	in_pool = function() return false end, -- :3c
 	rarity = FishingMod.FishRarity.Legendary,
 	key = "bgf_size2",
 	atlas = "fishies",
 	pos = {x = 0, y = 1},
-	config = {extra={median_weight = 32}},
+	config = {extra={weight = 2}},
 }
 FishingMod.FishingRodClass {
 	rarity = FishingMod.FishRarity.Common,

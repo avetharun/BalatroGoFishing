@@ -30,28 +30,28 @@ return {
             },
         },
         FishingRod = {
-            j_bgf_rod_basic = {
+            r_bgf_rod_basic = {
                 name="Fishing Fishing Rod",
                 text = {
                     "Standard fishing rod.",
                     "No bonuses, no drawbacks."
                 }
             },
-            j_bgf_rod_reinforced = {
+            r_bgf_rod_reinforced = {
                 name="Reinforced Fishing Rod",
                 text = {
                     "Slightly higher weight capability",
                     "but takes longer to reel in."
                 }
             },
-            j_bgf_rod_fiberglass = {
+            r_bgf_rod_fiberglass = {
                 name="Fiberglass Fishing Rod",
                 text = {
                     "Slightly higher weight capability",
                     "and is very fast, but hard to control."
                 }
             },
-            j_bgf_rod_carbon = {
+            r_bgf_rod_carbon = {
                 name="Carbon Fishing Rod",
                 text = {
                     "High weight capability",
@@ -59,7 +59,7 @@ return {
                     "but is heavy."
                 }
             },
-            j_bgf_rod_steel = {
+            r_bgf_rod_steel = {
                 name="Steel Fishing Rod",
                 text = {
                     "High weight capability",
@@ -67,7 +67,7 @@ return {
                     "but is heavy."
                 }
             },
-            j_bgf_rod_hypersteel = {
+            r_bgf_rod_hypersteel = {
                 name="HyperSteel Fishing Rod",
                 text = {
                     "Very high weight capability",
@@ -77,38 +77,38 @@ return {
             },
         },
         Baits = {
-            j_bgf_bait_forbidden = {
+            b_bgf_bait_forbidden = {
                 name = "Forbidden Bait(?)",
                 text = {
                     "You don't want to know what's in this."
                 }
             },
-            j_bgf_bait_legendary = {
+            b_bgf_bait_legendary = {
                 name = "Dragonscale Bait",
                 text = {
                     "How does a fish even eat this??"
                 }
             },
-            j_bgf_bait_strawberry = {
+            b_bgf_bait_strawberry = {
                 name = "Strawberry Wafer Cookie",
                 text = {
                     "You're more likely to eat this than a fish."
                 }
             },
-            j_bgf_bait_cheese = {
+            b_bgf_bait_cheese = {
                 name = "Cheese",
                 text = {
                     "Fish aren't rodents!"
                 }
             },
-            j_bgf_bait_stellaron = {
+            b_bgf_bait_stellaron = {
                 name = "Stellaron",
                 text = {
                     "Mysterious space thing",
                     "{s:0.8}Someone call {C:herta,s:0.8}Herta{}!"
                 }
             },
-            j_bgf_bait_worm = {
+            b_bgf_bait_worm = {
                 name = "Worm",
                 text = {
                     "Completely Normal Bait*",
@@ -118,17 +118,17 @@ return {
         },
         Fishies = {
 
-            j_bgf_salmon = { name = "Salmon", text = {"Reel good time!","Weight: #1#kg","#2#"}} ,
-            j_bgf_bass = { name = "Bass", text = {"Drop the bass!","Weight: #1#kg","#2#"}},
-            j_bgf_shrimp = { name = "Shrimp", text = {"A little too shrimpy for you?","Weight: #1#kg","#2#"}},
-            j_bgf_cod = { name = "Cod", text = {"My Cod! It's Jimbo!","Weight: #1#kg","#2#"}},
-            j_bgf_tuna = { name = "Tuna", text = {"Tuna in later!","Weight: #1#kg","#2#"}},
-            j_bgf_catfish = { name = "Catfish", text = {"Pawsitively fin-tastic!","Weight: #1#kg","#2#"}},
-            j_bgf_trout = { name = "Trout", text = {"Holy trout!","Weight: #1#kg","#2#"}},
-            j_bgf_pike = { name = "Pike", text = {"Take a pike!","Weight: #1#kg","#2#"}},
-            j_bgf_perch = { name = "Perch", text = {"Perch-fection!","Weight: #1#kg","#2#"}},
-            j_bgf_shark = {name = "Shark", text = {"Ultrakill reference, Ikea reference, you choose!","Weight: #1#kg","#2#"}},
-            j_bgf_size2 = {name = "Size 2 Fish", text = {"Okay this one's an Ultrakill reference.","Weight: #1#kg","#2#"}},
+            f_bgf_salmon = { name = "Salmon", text = {"Reel good time!","Weight: #1#kg","#2#"}} ,
+            f_bgf_bass = { name = "Bass", text = {"Drop the bass!","Weight: #1#kg","#2#"}},
+            f_bgf_shrimp = { name = "Shrimp", text = {"A little too shrimpy for you?","Weight: #1#kg","#2#"}},
+            f_bgf_cod = { name = "Cod", text = {"My Cod! It's Jimbo!","Weight: #1#kg","#2#"}},
+            f_bgf_tuna = { name = "Tuna", text = {"Tuna in later!","Weight: #1#kg","#2#"}},
+            f_bgf_catfish = { name = "Catfish", text = {"Pawsitively fin-tastic!","Weight: #1#kg","#2#"}},
+            f_bgf_trout = { name = "Trout", text = {"Holy trout!","Weight: #1#kg","#2#"}},
+            f_bgf_pike = { name = "Pike", text = {"Take a pike!","Weight: #1#kg","#2#"}},
+            f_bgf_perch = { name = "Perch", text = {"Perch-fection!","Weight: #1#kg","#2#"}},
+            f_bgf_shark = {name = "Shark", text = {"Ultrakill reference, Ikea reference, you choose!","Weight: #1#kg","#2#"}},
+            f_bgf_size2 = {name = "Size 2 Fish", text = {"Okay this one's an Ultrakill reference.","Size: 2","#2#"}},
         },
         Tarot ={
             c_bgf_fruit_tree = {

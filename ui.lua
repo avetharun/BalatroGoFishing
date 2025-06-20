@@ -63,10 +63,16 @@ FishingMod.card_collection_UIBox_rod_inventory = function(_pool, rows, args)
 			key="j_bgf_rod_basic",
 			weight = 8,
 			ability = {
-				weight = 8,
 				extra = {weight=8},
 			}
 		}
+		
+		FishingMod.FishingRod.ability.extra = FishingMod.FishingRod.ability.extra or {}
+		FishingMod.FishingRod.ability.extra.gravity = FishingMod.FishingRod.ability.extra.gravity or 1
+		FishingMod.FishingRod.ability.extra.speed = FishingMod.FishingRod.ability.extra.speed or 1
+		FishingMod.FishingRod.ability.extra.reel_speed = FishingMod.FishingRod.ability.extra.reel_speed or 1
+		FishingMod.FishingRod.ability.extra.weight = FishingMod.FishingRod.ability.extra.weight or 8
+		FishingMod.FishingRod.ability.extra.weight_multiplier = FishingMod.FishingRod.ability.extra.weight_multiplier or 1
 	end
     args = args or {}
     args.w_mod = args.w_mod or 1
@@ -505,11 +511,11 @@ FishingMod.card_collection_UIBox_fish_inventory = function(_pool, rows, args)
     dropoff.states.release_on.can = true
 
 	FishingMod.dropoff.on_card_added = function (self, card)
-		local weight = card.ability.weight
+		local weight = card.ability.extra.weight
 		local medianWeight = G.P_CENTERS[card.config.center_key].config.extra.median_weight
 		local ratio = (weight / medianWeight) * 100
 		local value = card.config.center:calculate_sell_value(card)
-		current_crafting_state.weight = card.ability.weight
+		current_crafting_state.weight = card.ability.extra.weight or 1
 		current_crafting_state.size = localize(FishingMod.classifyWeight(weight, medianWeight))
 		current_crafting_state.money = "$"..value
 		current_crafting_state.R = card.config.center.rarity
@@ -570,6 +576,10 @@ FishingMod.card_collection_UIBox_fish_inventory = function(_pool, rows, args)
             end
         end
     end
+	
+	FishingMod.dropoff.can_add_card = function (self, card)
+		return self.cards[1] == nil
+	end
 	local in_shop = G.STATE == 5
     G.FUNCS.SMODS_card_collection_page{ cycle_config = { current_option = 1 }}
 	dropoff.states.collide.can = true
@@ -1013,10 +1023,10 @@ local reeling_area_definition = function(reeling_area_objects)
 		oldbardraw(self)
 		local bar_width = 0.25 -- atm, no rods give a larger bar width. TODO: change this lol
 		if G.CONTROLLER.held_buttons["a"] or love.mouse.isDown(1) or love.keyboard.isDown("space") then
-			bar_offset = bar_offset + FishingMod.FishingRod.ability.extra.speed * (dt * 0.85)
+			bar_offset = bar_offset + (FishingMod.FishingRod.ability.extra.speed or 1) * (dt * 0.85)
 		else
 			-- print("G:"..FishingMod.FishingRod.ability.extra.gravity)
-			bar_offset = bar_offset - FishingMod.FishingRod.ability.extra.gravity * dt
+			bar_offset = bar_offset - (FishingMod.FishingRod.ability.extra.gravity or 1) * dt
 		end
 		bar_offset = math.min(1, math.max(0, bar_offset))
 		bar_upper.T.x = self.T.x
@@ -1077,11 +1087,17 @@ local reeling_area_definition = function(reeling_area_objects)
 			if progress_filled_time > 0.1 then
 				play_sound("tarot1", 1, 2)
 				G.FUNCS.exit_overlay_menu()
-				FishingMod.fishing_minigame.results_screen.fish = {}
+				print("exited")
+				FishingMod.fishing_minigame.results_screen.has_fish = true
 				-- Minigame finished
-				FishingMod.fishing_minigame.results_screen.uibox = FishingMod.create_UIBox_result_screen()
+				if FishingMod.fishing_minigame.results_screen.uibox and FishingMod.fishing_minigame.results_screen.uibox.remove then
+					FishingMod.fishing_minigame.results_screen.uibox:remove()
+					FishingMod.fishing_minigame.results_screen.uibox = nil
+				end
+				print("creating result screen")
+				print("created result screen")
 				G.FUNCS.overlay_menu({
-					definition = FishingMod.fishing_minigame.results_screen.uibox
+					definition = FishingMod.create_UIBox_result_screen("could_be_error")
 				})
 			end
 		end
